@@ -3,28 +3,32 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
-  if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  const { id } = await params;
+  const groupId = Number(id);
+
+  if (isNaN(groupId)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const group = await prisma.wordGroup.findUnique({
-    where: { id },
+    where: { id: groupId },
     include: { cards: true },
   });
 
   if (!group) return NextResponse.json({ error: "Group not found" }, { status: 404 });
 
-  return NextResponse.json( group);
+  return NextResponse.json(group);
 }
 
 
 // PUT /api/groups/:id -> frissíti a nevet + szavakat
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const groupId = Number(params.id);
+  const { id } = await params;
+  const groupId = Number(id);
+
   if (Number.isNaN(groupId)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const { name, cards } = await req.json() as {
@@ -54,16 +58,18 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
-  if (isNaN(id)) {
+
+  const { id } = await params;
+  const groupId = Number(id);
+  if (isNaN(groupId)) {
     return NextResponse.json({ error: "Érvénytelen ID" }, { status: 400 });
   }
 
   try {
     await prisma.wordGroup.delete({
-      where: { id },
+      where: { id: groupId },
     });
     return NextResponse.json({ message: "Csoport törölve" });
   } catch (err) {

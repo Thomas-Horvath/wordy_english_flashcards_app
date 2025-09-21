@@ -22,7 +22,7 @@ export default function BackupButton() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Hiba történt a mentés során");
+      alert("Hiba történt a mentés során: " + err);
     } finally {
       setLoading(false);
     }
