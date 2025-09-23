@@ -1,28 +1,36 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CardPlayer from "./CardPlayer"; // klienses komponens
+import { isLoggedIn } from "@/lib/auth";
+import Link from "next/link";
 
-type WordPair = { id: number; en: string; hu: string };
 
-function shuffle<T>(arr: T[]): T[] {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
+
+type WordPair = { en: string; hu: string };
+
 
 export default async function Page({ params }: { params: { id: string } }) {
-    const { id } = await params;  // 👈 await-eljük a params-ot
+    const { id } =  params;  // 👈 await-eljük a params-ot
     const groupId = Number(id);
+    const loggedIn = await isLoggedIn();
+
     if (Number.isNaN(groupId)) return notFound();
 
-    const cards = await prisma.wordPair.findMany({
+    const cards: WordPair[] = await prisma.wordPair.findMany({
         where: { groupId },
-        select: { id: true, en: true, hu: true },
+        select: { en: true, hu: true },
         orderBy: { id: "asc" },
     });
+
+    if (!loggedIn) {
+        // ha nincs user, átirányítjuk loginra
+        return (
+            <main className="flex items-center justify-center min-h-screen">
+                <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+            </main>
+        );
+    }
+
 
     if (cards.length === 0) {
         return (
@@ -32,6 +40,6 @@ export default async function Page({ params }: { params: { id: string } }) {
         );
     }
 
-    const randomized: WordPair[] = shuffle(cards);
-    return <CardPlayer initialWords={randomized} />;
+ 
+    return <CardPlayer initialWords={cards} />;
 }

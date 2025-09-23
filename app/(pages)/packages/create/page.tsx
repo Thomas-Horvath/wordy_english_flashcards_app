@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function NewPackagePage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+   const { loggedIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +21,6 @@ export default function NewPackagePage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ name }),
       });
@@ -33,6 +35,16 @@ export default function NewPackagePage() {
       setLoading(false);
     }
   };
+
+
+  if (!loggedIn) {
+    // ha nincs user, átirányítjuk loginra
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+      </main>
+    );
+  }
 
   return (
     <main className="pt-24 px-2  min-h-screen ">

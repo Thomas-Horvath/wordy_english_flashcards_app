@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUserFromRequest } from "@/lib/auth"; // korábbi helpered
+import { getUserFromCookies } from "@/lib/auth"; // korábbi helpered
 
 export async function POST(req: Request) {
-  const user = await getUserFromRequest(req);
+  const user = await getUserFromCookies();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

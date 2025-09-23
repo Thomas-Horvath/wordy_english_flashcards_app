@@ -2,18 +2,12 @@
 
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useAuth } from "./context/AuthContext";
+
 
 export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const { loggedIn } = useAuth();
 
-
-
-  useEffect(() => {
-    setToken(localStorage.getItem("token"));
-    setIsLoggedIn(token !== null);
-  }, [token]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-neutral-900 text-white px-4">
@@ -25,7 +19,7 @@ export default function HomePage() {
           Gyakorolj szókártyákkal – válassz szócsomagot, pörgesd a kártyákat, és teszteld magad!
         </p>
 
-        {!isLoggedIn ? (
+        {!loggedIn ? (
           <div className="flex gap-4 justify-center">
             <Link
               href="/register"

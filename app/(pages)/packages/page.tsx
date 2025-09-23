@@ -1,56 +1,11 @@
 
-// import Link from "next/link";
-// import { prisma } from "@/lib/prisma";
-// import PackageItem from "./PackageItem";
-
-
-// export const dynamic = "force-dynamic"; // egyszerűség kedvéért
-
-
-// export default async function PackagesPage() {
-//   const packs = await prisma.wordGroup.findMany({
-//     orderBy: { id: "asc" },
-//     select: { id: true, name: true, _count: { select: { cards: true } } },
-//   });
-
-
-//   return (
-//     <main className="pt-24 mx-auto max-w-3xl p-6 ">
-
-//       <h1 className="mb-14 text-5xl font-bold ">📚 Szócsomagjaid</h1>
-
-//       <ul className="space-y-3">
-//         {packs.map((p) => (
-//           <PackageItem
-//             key={p.id}
-//             id={p.id}
-//             name={p.name}
-//             count={p._count.cards}
-//           />
-//         ))}
-//       </ul>
-
-
-
-//       <div className="flex justify-center">
-//         <Link
-//           href="/packages/create"
-//           className="mt-10 inline-block rounded-lg bg-green-600 px-6 py-3 text-white font-medium hover:bg-green-500 transition"
-//         >
-//           + Új szócsomag
-//         </Link>
-//       </div>
-//     </main >
-//   );
-// }
-
-
 "use client";
-
 import Spinner from "@/app/components/Spinner";
+import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaPlay, FaEdit, FaTrash } from "react-icons/fa";
+import ConfirmModal from "./ConfirmModal";
 
 type Pack = {
   id: number;
@@ -61,18 +16,17 @@ type Pack = {
 export default function PackagesPage() {
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loggedIn } = useAuth();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!loggedIn) {
         setLoading(false);
         return;
       }
-
-      const res = await fetch("/api/groups", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch("/api/groups", { credentials: "include" });
 
       if (res.ok) {
         const data = await res.json();
@@ -82,16 +36,34 @@ export default function PackagesPage() {
     })();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Biztosan törlöd a szócsomagot?")) return;
 
-    const res = await fetch(`/api/groups/${id}`, { method: "DELETE" });
+
+  const requestDelete = (id: number) => {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    const res = await fetch(`/api/groups/${deleteId}`, { method: "DELETE" });
     if (res.ok) {
-      setPacks((prev) => prev.filter((p) => p.id !== id));
+      setPacks((prev) => prev.filter((p) => p.id !== deleteId));
     } else {
       alert("Hiba történt a törlés során");
     }
+    setConfirmOpen(false);
+    setDeleteId(null);
   };
+
+  if (!loggedIn) {
+    // ha nincs user, átirányítjuk loginra
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+      </main>
+    );
+  }
 
   if (loading) return <Spinner />;
 
@@ -130,7 +102,7 @@ export default function PackagesPage() {
               </Link>
 
               <button
-                onClick={() => handleDelete(p.id)}
+                onClick={() => requestDelete(p.id)}
                 className="rounded-lg border border-red-500 px-4 py-2 text-sm text-red-400 hover:bg-red-600 hover:text-white transition cursor-pointer"
               >
                 <FaTrash />
@@ -148,6 +120,16 @@ export default function PackagesPage() {
           + Új szócsomag
         </Link>
       </div>
+
+
+      {confirmOpen && (
+        <ConfirmModal
+          message="Biztosan törölni szeretnéd ezt a szócsomagot?"
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={ handleDelete }
+        />
+      )
+      }
     </main>
   );
 }

@@ -1,22 +1,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUserFromRequest } from "@/lib/auth";
+import { getUserFromCookies } from "@/lib/auth";
 
-export async function GET(req: Request) {
-  const user = await getUserFromRequest(req);
+export async function GET() {
+  const user = await getUserFromCookies();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const groups = await prisma.wordGroup.findMany({
     where: { userId: user.id },
-    orderBy: { id: "asc" },
+    orderBy: { name: "asc" },
     select: { id: true, name: true, _count: { select: { cards: true } } },
   });
 
-  return NextResponse.json(groups);
+  const sorted = groups.sort((a, b) =>
+  a.name.localeCompare(b.name, "hu") // 👈 magyar rendezés
+);
+
+  return NextResponse.json(sorted);
 }
 
 export async function POST(req: Request) {
-  const user = await getUserFromRequest(req);
+  const user = await getUserFromCookies();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name } = await req.json();

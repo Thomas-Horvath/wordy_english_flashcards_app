@@ -12,7 +12,11 @@ export async function POST(req: Request) {
     if (!match) return NextResponse.json({ error: "Hibás jelszó!" }, { status: 401 });
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 óra
+    
+
+
+
     await prisma.session.create({
         data: {
             token,
@@ -21,5 +25,15 @@ export async function POST(req: Request) {
         },
     });
 
-    return NextResponse.json({ token });
+    const res = NextResponse.json({ success: true });
+    res.cookies.set("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 24 * 60 * 60, // 24 óra
+     
+    });
+
+    return res;
 }

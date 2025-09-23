@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/app/components/Spinner";
+import Link from "next/link";
+import { useAuth } from "@/app/context/AuthContext";
+import { FaTrash } from "react-icons/fa";
+import ConfirmModal from "../../ConfirmModal";
 
 type WordPair = { id?: number; en: string; hu: string };
 
 export default function EditPackagePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-
+  const { loggedIn } = useAuth();
   const [name, setName] = useState("");
   const [cards, setCards] = useState<WordPair[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmIndex, setConfirmIndex] = useState<number | null>(null);
+
 
   useEffect(() => {
     if (!params.id) return;
@@ -26,6 +32,8 @@ export default function EditPackagePage() {
     })();
   }, [params.id]);
 
+
+
   const handleCardChange = (index: number, field: "en" | "hu", value: string) => {
     const updated = [...cards];
     updated[index] = { ...updated[index], [field]: value };
@@ -35,6 +43,8 @@ export default function EditPackagePage() {
   const addCard = () => {
     setCards([...cards, { en: "", hu: "" }]);
   };
+
+
 
   const deleteCard = async (id?: number, index?: number) => {
     if (id) {
@@ -53,10 +63,16 @@ export default function EditPackagePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 🔹 kiszűrjük az üres sorokat
+    const filtered = cards.filter(
+      (c) => c.en.trim() !== "" && c.hu.trim() !== ""
+    );
+
     const res = await fetch(`/api/groups/${params.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, cards }),
+      body: JSON.stringify({ name, cards: filtered }),
     });
     if (res.ok) {
       router.push("/packages");
@@ -68,6 +84,19 @@ export default function EditPackagePage() {
   if (loading) {
     return <Spinner />;
   }
+
+
+
+
+  if (!loggedIn) {
+    // ha nincs user, átirányítjuk loginra
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <p>Nem vagy bejelentkezve. <Link href="/login">Bejelentkezés</Link></p>
+      </main>
+    );
+  }
+
 
   return (
     <main className="pt-24 mx-auto max-w-3xl p-6 text-white">
@@ -88,7 +117,10 @@ export default function EditPackagePage() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Szavak</h2>
           {cards.map((c, i) => (
-            <div key={c.id ?? i} className="flex gap-4 items-center">
+            <div
+              key={c.id ?? i}
+              className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center"
+            >
               <input
                 value={c.en}
                 onChange={(e) => handleCardChange(i, "en", e.target.value)}
@@ -103,10 +135,11 @@ export default function EditPackagePage() {
               />
               <button
                 type="button"
-                onClick={() => deleteCard(c.id, i)}
-                className="rounded-lg border border-red-500 px-3 py-2 text-sm text-red-400 hover:bg-red-600 hover:text-white transition"
+                onClick={() => setConfirmIndex(i)}
+                className="flex items-center justify-center rounded-lg border border-red-500 p-2 text-red-400 hover:bg-red-600 hover:text-white transition w-full sm:w-auto mt-2"
+                title="Törlés"
               >
-                Törlés
+                <FaTrash size={16} />
               </button>
             </div>
           ))}
@@ -135,6 +168,20 @@ export default function EditPackagePage() {
           </button>
         </div>
       </form>
+
+
+
+
+      {confirmIndex !== null && (
+        <ConfirmModal
+          message="Biztosan törölni szeretnéd ezt a szót?"
+          onCancel={() => setConfirmIndex(null)}
+          onConfirm={() => {
+            deleteCard(cards[confirmIndex].id, confirmIndex);
+            setConfirmIndex(null);
+          }}
+        />
+      )}
     </main>
   );
 }

@@ -1,45 +1,24 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { getUserFromCookies } from "@/lib/auth"; // ezt írtuk meg korábban
 import Link from "next/link";
-import BackupButton from '../../components/BackUpButton';
-import { User } from "@/prisma/generated/prisma/wasm";
+import BackupButton from "../../components/BackUpButton";
+import SignOutButton from "./SignOutButton";
 
-export default function ProfilPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+export default async function ProfilPage() {
+  const user = await getUserFromCookies();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
+  if (!user) {
+    // ha nincs user, átirányítjuk loginra
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <p>Nem vagy bejelentkezve. <Link href="/login">Bejelentkezés</Link></p>
+      </main>
+    );
+  }
 
-    (async () => {
-      const res = await fetch("/api/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setUser(await res.json());
-      } else {
-        router.push("/login");
-      }
-      setLoading(false);
-    })();
-  }, [router]);
-
-  if (loading) return <p className="text-center">Betöltés...</p>;
-  if (!user) return null;
 
   return (
     <main className=" min-h-screen py-24 px-2">
-      <div className="max-w-[1200px] mx-auto bg-neutral-900 text-white px-4 py-10 rounded-xl shadow-lg" >
-
-
-
+      <div className="max-w-[1200px] mx-auto bg-neutral-900 text-white px-4 py-10 rounded-xl shadow-lg">
         <h1 className="text-4xl font-bold mb-8 text-center">⚙️ Beállítások</h1>
 
         {/* Felhasználói adatok */}
@@ -62,10 +41,9 @@ export default function ProfilPage() {
           >
             + Új szócsomag
           </Link>
-          {/* Itt listáznánk a user csomagjait */}
         </section>
 
-        {/* Beállítások */}
+        {/* Alapbeállítások */}
         <section className="mb-8 bg-neutral-800 p-6 rounded-xl shadow">
           <h2 className="text-2xl font-semibold mb-4">Alapbeállítások</h2>
           <div className="flex flex-col gap-3">
@@ -82,19 +60,13 @@ export default function ProfilPage() {
         </section>
 
         {/* Fiókkezelés */}
-        <section className="bg-neutral-800 p-6 rounded-xl shadow mb-8 ">
-          <h2 className="text-2xl font-semibold mb-4">Fiókkezelés</h2>
-          <button className="px-4 py-2 bg-red-600 rounded hover:bg-red-500 cursor-pointer">
-            Kijelentkezés
-          </button>
-        </section>
+        <SignOutButton />
 
-
+        {/* Backup */}
         <section className="bg-neutral-800 p-6 rounded-xl shadow ">
-          <h2 className="text-2xl font-semibold mb-4">Fiókkezelés</h2>
+          <h2 className="text-2xl font-semibold mb-4">Adatkezelés</h2>
           <BackupButton />
         </section>
-
       </div>
     </main>
   );

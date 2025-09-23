@@ -1,36 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-type WordPair = { en: string; hu: string };
+
 
 export default function Card({
-  word,
-  startLang,
+  front,
+  back,
+  frontLang
 }: {
-  word: WordPair;
-  startLang: "en" | "hu";
+  front: string,
+  back: string;
+  frontLang: "en" | "hu";
 }) {
   const [rotation, setRotation] = useState(0);
-  const [frontText, setFrontText] = useState(word.en);
-  const [backText, setBackText] = useState(word.hu);
+  const speak = (text: string, lang: string = "en-US") => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    speechSynthesis.speak(utterance);
+  };
 
-  // ha új szó érkezik (új mount is lehet), induljon angol oldalról
-  useEffect(() => {
-    setRotation(0);
-  }, [word.en, word.hu]);
 
-  // ha új szó érkezik → reset és startLang szerint állítjuk a tartalmat
-  useEffect(() => {
-    if (startLang === "en") {
-      setFrontText(word.en);
-      setBackText(word.hu);
-    } else {
-      setFrontText(word.hu);
-      setBackText(word.en);
-    }
-    setRotation(0); // mindig az első oldalról indul
-  }, [word, startLang]);
 
   return (
     <div
@@ -38,17 +28,41 @@ export default function Card({
       onClick={() => setRotation((r) => r + 180)} // mindig ugyanabba az irányba fordul a kártya
     >
       <div
-        className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]"
+        className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] "
         style={{ transform: `rotateY(${rotation}deg)` }}
       >
         {/* Front (angol) */}
         <div className="absolute inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden]">
-          {frontText}
+          {front}
+          {/* Csak akkor, ha a front az angol */}
+          {frontLang === "en" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                speak(front);
+              }}
+              className=" fixed bottom-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg"
+            >
+              🔊
+            </button>
+          )}
         </div>
 
         {/* Back (magyar) */}
         <div className="absolute inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
-          {backText}
+          {back}
+          {/* Csak akkor, ha a front az angol */}
+          {frontLang === "hu" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                speak(back)
+              }}
+              className="fixed bottom-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg"
+            >
+              🔊
+            </button>
+          )}
         </div>
       </div>
     </div>
