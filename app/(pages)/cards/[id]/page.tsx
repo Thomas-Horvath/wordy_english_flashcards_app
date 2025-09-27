@@ -3,18 +3,24 @@ import { prisma } from "@/lib/prisma";
 import CardPlayer from "./CardPlayer"; // klienses komponens
 import { isLoggedIn } from "@/lib/auth";
 import Link from "next/link";
+import AuthGuard from "@/app/components/AuthGuard";
 
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 
 type WordPair = { en: string; hu: string };
 
 
 export default async function Page({ params }: { params: { id: string } }) {
-    const { id } =  params;  // 👈 await-eljük a params-ot
+    const { id } = await params;  // 👈 await-eljük a params-ot
     const groupId = Number(id);
     const loggedIn = await isLoggedIn();
 
     if (Number.isNaN(groupId)) return notFound();
+
+   
 
     const cards: WordPair[] = await prisma.wordPair.findMany({
         where: { groupId },
@@ -40,6 +46,11 @@ export default async function Page({ params }: { params: { id: string } }) {
         );
     }
 
- 
-    return <CardPlayer initialWords={cards} />;
+
+    return (
+        <AuthGuard>
+            <CardPlayer initialWords={cards} />
+        </AuthGuard>
+    );
+
 }

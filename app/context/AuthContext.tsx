@@ -3,16 +3,17 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type AuthContextType = {
-  loggedIn: boolean;
+  loggedIn: boolean | null;
   setLoggedIn: (value: boolean) => void;
   checkAuth: () => Promise<void>;
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [loggedIn, setLoggedIn] = useState(false);
-
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
 
 
@@ -25,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoggedIn(data.loggedIn === true);
     } catch {
       setLoggedIn(false);
+    } finally {
+      setLoading(false); // ✔️ csak itt állítjuk át, ha kész
     }
   };
 
@@ -35,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ loggedIn, setLoggedIn, checkAuth }}>
+    <AuthContext.Provider value={{ loggedIn,loading , setLoggedIn, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

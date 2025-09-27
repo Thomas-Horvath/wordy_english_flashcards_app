@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 export default function RegisterPage() {
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,7 +21,7 @@ export default function RegisterPage() {
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ name, email, password }),
             });
 
             const data = await res.json();
@@ -48,6 +49,14 @@ export default function RegisterPage() {
                     Regisztráció
                 </h1>
 
+                <input
+                    type="text"
+                    placeholder="Név"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
+                    required
+                />
                 <input
                     type="email"
                     placeholder="E-mail"

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { FaPlay, FaEdit, FaTrash } from "react-icons/fa";
 import ConfirmModal from "./ConfirmModal";
 
+
 type Pack = {
   id: number;
   name: string;
@@ -19,6 +20,8 @@ export default function PackagesPage() {
   const { loggedIn } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+
 
   useEffect(() => {
     (async () => {
@@ -34,7 +37,7 @@ export default function PackagesPage() {
       }
       setLoading(false);
     })();
-  }, []);
+  }, [loggedIn]);
 
 
 
@@ -56,6 +59,8 @@ export default function PackagesPage() {
     setDeleteId(null);
   };
 
+  if (loggedIn === null || loading) return <Spinner />;
+
   if (!loggedIn) {
     // ha nincs user, átirányítjuk loginra
     return (
@@ -65,11 +70,16 @@ export default function PackagesPage() {
     );
   }
 
-  if (loading) return <Spinner />;
-
   return (
     <main className="pt-24 mx-auto max-w-3xl p-6">
       <h1 className="mb-14 text-3xl sm:text-5xl font-bold">📚 Szócsomagjaid</h1>
+
+
+      {packs.length === 0 && (
+        <div className="text-center text-neutral-400">
+          Még nincs szócsomagod. Kattints az alábbi gombra egy új létrehozásához!
+        </div>
+      )}
 
       <ul className="space-y-3">
         {packs.map((p) => (
@@ -126,7 +136,7 @@ export default function PackagesPage() {
         <ConfirmModal
           message="Biztosan törölni szeretnéd ezt a szócsomagot?"
           onCancel={() => setConfirmOpen(false)}
-          onConfirm={ handleDelete }
+          onConfirm={handleDelete}
         />
       )
       }

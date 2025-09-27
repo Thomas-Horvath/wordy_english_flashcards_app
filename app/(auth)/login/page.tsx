@@ -72,7 +72,7 @@ export default function LoginPage() {
           <p className="text-red-500 text-sm mt-2">{message}</p>
           <button
             type="submit"
-            className="mt-4 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+            className="cursor-pointer  px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
           >
             Belépés
           </button>

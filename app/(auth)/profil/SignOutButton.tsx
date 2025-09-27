@@ -15,14 +15,13 @@ export default function SignOutButton() {
   };
 
   return (
-        <section className="bg-neutral-800 p-6 rounded-xl shadow mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Fiókkezelés</h2>
+       
           <button
             onClick={signOut}
-            className="px-4 py-2 bg-red-600 rounded hover:bg-red-500 cursor-pointer"
+            className="w-fit px-4 py-2 bg-red-600 rounded hover:bg-red-500 cursor-pointer"
           >
             Kijelentkezés
           </button>
-        </section>
+     
   );
 }

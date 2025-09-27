@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { IoSettings } from "react-icons/io5";
 import { IoIosExit } from "react-icons/io";
 import { useRouter } from 'next/navigation'
-import {  useState } from 'react';
+import { useState } from 'react';
 import { HiMenu, HiX } from "react-icons/hi";
 import { useAuth } from '../context/AuthContext';
 
@@ -13,7 +13,7 @@ const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter()
     const [open, setOpen] = useState(false);
-    const { loggedIn, setLoggedIn } = useAuth();
+    const { loggedIn, loading, setLoggedIn } = useAuth();
 
     const signOut = async () => {
         try {
@@ -45,21 +45,38 @@ const Navbar = () => {
                 </div>
 
                 {/* Nav links */}
-                <ul className="hidden md:flex  h-full text-xl">
-                    <li>
-                        <Link
-                            href="/"
-                            className={clsx(
-                                "relative flex items-center h-full px-4 text-white transition-colors duration-100 hover:text-yellow-300",
-                                { "bg-blue-700 border-b-2 border-yellow-400": pathname === "/" }
-                            )}
-                        >
-                            Főoldal
-                        </Link>
-                    </li>
 
-                    {loggedIn ? (
+                <ul className="hidden md:flex  h-full text-xl">
+
+                    {loading ? (
+
                         <>
+                            <li className="flex items-center h-full px-4">
+                                <div className="h-5 w-25 bg-blue-500/50 rounded animate-pulse" />
+                            </li>
+                            <li className="flex items-center h-full px-4">
+                                <div className="h-5 w-30 bg-blue-500/50 rounded animate-pulse" />
+                            </li>
+                            <li className="flex items-center h-full px-4">
+                                <div className="h-5 w-5 bg-blue-500/50 rounded-full animate-pulse" />
+                            </li>
+                            <li className="flex items-center h-full px-4">
+                                <div className="h-6 w-6 bg-blue-500/50 rounded-full animate-pulse" />
+                            </li>
+                        </>
+                    ) : loggedIn ? (
+                        <>
+                            <li>
+                                <Link
+                                    href="/"
+                                    className={clsx(
+                                        "relative flex items-center h-full px-4 text-white transition-colors duration-100 hover:text-yellow-300",
+                                        { "bg-blue-700 border-b-2 border-yellow-400": pathname === "/" }
+                                    )}
+                                >
+                                    Főoldal
+                                </Link>
+                            </li>
                             <li>
                                 <Link
                                     href="/packages"
@@ -92,17 +109,30 @@ const Navbar = () => {
                             </li>
                         </>
                     ) : (
-                        <li>
-                            <Link
-                                href="/login"
-                                className={clsx(
-                                    "relative flex items-center h-full px-4 text-white transition-colors duration-100 hover:text-yellow-300",
-                                    { "bg-blue-700 border-b-2 border-yellow-400": pathname === "/login" }
-                                )}
-                            >
-                                Belépés
-                            </Link>
-                        </li>
+                        <>
+                            <li>
+                                <Link
+                                    href="/"
+                                    className={clsx(
+                                        "relative flex items-center h-full px-4 text-white transition-colors duration-100 hover:text-yellow-300",
+                                        { "bg-blue-700 border-b-2 border-yellow-400": pathname === "/" }
+                                    )}
+                                >
+                                    Főoldal
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/login"
+                                    className={clsx(
+                                        "relative flex items-center h-full px-4 text-white transition-colors duration-100 hover:text-yellow-300",
+                                        { "bg-blue-700 border-b-2 border-yellow-400": pathname === "/login" }
+                                    )}
+                                >
+                                    Belépés
+                                </Link>
+                            </li>
+                        </>
                     )}
 
 
@@ -118,66 +148,68 @@ const Navbar = () => {
 
 
             {/* Mobile menu */}
-            {open && (
-                <div className="md:hidden absolute top-16 left-0 w-full bg-blue-700 shadow-lg ">
-                    <ul className="flex flex-col text-lg">
-                        <li>
-                            <Link
-                                href="/"
-                                onClick={() => setOpen(false)}
-                                className="block px-6 py-3 text-white hover:bg-blue-600"
-                            >
-                                Főoldal
-                            </Link>
-                        </li>
-                        {loggedIn ? (
-                            <>
-                                <li>
-                                    <Link
-                                        href="/packages"
-                                        onClick={() => setOpen(false)}
-                                        className="block px-6 py-3 text-white hover:bg-blue-600"
-                                    >
-                                        Szócsomagok
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/profil"
-                                        onClick={() => setOpen(false)}
-                                        className="block px-6 py-3 text-white hover:bg-blue-600"
-                                    >
-                                        Beállítások
-                                    </Link>
-                                </li>
-                                <li>
-                                    <button
-                                        onClick={() => {
-                                            signOut();
-                                            setOpen(false);
-                                        }}
-                                        className="block w-full text-left px-6 py-3 text-white hover:bg-blue-600"
-                                    >
-                                        Kilépés
-                                    </button>
-                                </li>
-                            </>
-                        ) : (
+            {
+                open && (
+                    <div className="md:hidden absolute top-16 left-0 w-full bg-blue-700 shadow-lg ">
+                        <ul className="flex flex-col text-lg">
                             <li>
                                 <Link
-                                    href="/login"
+                                    href="/"
                                     onClick={() => setOpen(false)}
                                     className="block px-6 py-3 text-white hover:bg-blue-600"
                                 >
-                                    Belépés
+                                    Főoldal
                                 </Link>
                             </li>
-                        )}
-                    </ul>
-                </div>
-            )}
+                            {loggedIn ? (
+                                <>
+                                    <li>
+                                        <Link
+                                            href="/packages"
+                                            onClick={() => setOpen(false)}
+                                            className="block px-6 py-3 text-white hover:bg-blue-600"
+                                        >
+                                            Szócsomagok
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/profil"
+                                            onClick={() => setOpen(false)}
+                                            className="block px-6 py-3 text-white hover:bg-blue-600"
+                                        >
+                                            Beállítások
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                signOut();
+                                                setOpen(false);
+                                            }}
+                                            className="block w-full text-left px-6 py-3 text-white hover:bg-blue-600"
+                                        >
+                                            Kilépés
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <li>
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setOpen(false)}
+                                        className="block px-6 py-3 text-white hover:bg-blue-600"
+                                    >
+                                        Belépés
+                                    </Link>
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                )
+            }
 
-        </nav>
+        </nav >
     );
 }
 

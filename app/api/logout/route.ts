@@ -2,15 +2,19 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-export async function POST() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
 
-    if (token) {
-        await prisma.session.deleteMany({
-            where: { token },
-        });
-    }
+
+
+
+export async function POST() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (token) {
+    await prisma.session.deleteMany({
+      where: { token },
+    });
+  }
 
 
   const res = NextResponse.json({ success: true });
@@ -23,5 +27,5 @@ export async function POST() {
     maxAge: 0,
   });
 
-    return res;
+  return res;
 }

@@ -32,7 +32,7 @@ export default function Card({
         style={{ transform: `rotateY(${rotation}deg)` }}
       >
         {/* Front (angol) */}
-        <div className="absolute inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden]">
+        <div className="absolute px-2 text-center inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden]">
           {front}
           {/* Csak akkor, ha a front az angol */}
           {frontLang === "en" && (
@@ -49,7 +49,7 @@ export default function Card({
         </div>
 
         {/* Back (magyar) */}
-        <div className="absolute inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute px-2 text-center inset-0 grid place-items-center rounded-xl bg-neutral-800 text-white text-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
           {back}
           {/* Csak akkor, ha a front az angol */}
           {frontLang === "hu" && (

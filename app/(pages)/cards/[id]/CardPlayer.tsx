@@ -14,7 +14,11 @@ export default function CardPlayer({ initialWords }: { initialWords: WordPair[] 
     const [startLang, setStartLang] = useState<"en" | "hu">("en"); // alap: angol
     const [showModal, setShowModal] = useState(false);
 
-    console.log('initialWords:', words);
+
+    const total = words.length;
+    const remaining = total - index - 1;
+    // progress százalék
+    const progress = Math.round(((index + 1 ) / total) * 100);
 
     function shuffle<T>(arr: T[]): T[] {
         const a = [...arr];
@@ -46,10 +50,27 @@ export default function CardPlayer({ initialWords }: { initialWords: WordPair[] 
     const front = startLang === "en" ? current.en : current.hu;
     const back = startLang === "en" ? current.hu : current.en;
 
-    console.log(current, front, back);
+
 
     return (
-        <main className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 gap-6">
+        <main className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 gap-2 pt-24">
+            {/* ✅ Progress kijelzés */}
+            <div className="w-full max-w-md text-center  mb-16 px-4">
+                <div className="flex justify-between text-gray-300 text-sm mb-2">
+                    <span>✅ {index + 1} / {total} szó</span>
+                    <span>📚 {remaining >= 0 ? remaining : 0} szó van még hátra</span>
+                </div>
+
+                <div className="w-full h-3 bg-neutral-700 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-indigo-500 transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+            </div>
+
+
+
 
             {/* key={index} → a Card újramountol, ezért mindig angol oldalról indul */}
             <Card key={index} front={front} back={back} frontLang={startLang} />
