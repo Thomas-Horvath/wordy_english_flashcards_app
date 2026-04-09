@@ -86,14 +86,14 @@ export default function RegisterPage() {
                 <p className="text-red-500 text-sm mt-2">{message}</p>
                 <button
                     type="submit"
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded text-white"
+                    className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded text-white"
                 >
                     Regisztráció
                 </button>
 
                 <p className="text-gray-400 text-sm text-center mt-6">
                     Van már fiókod?{" "}
-                    <a href="/login" className="text-indigo-400 hover:underline">
+                    <a href="/login" className="text-blue-400 hover:underline">
                         Bejelentkezés
                     </a>
                 </p>

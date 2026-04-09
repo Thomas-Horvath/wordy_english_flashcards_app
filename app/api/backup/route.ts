@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
+import { getUserFromCookies } from "@/lib/auth";
 
 export async function GET() {
   try {
+    const user = await getUserFromCookies();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     // A db fájl helye – figyelj, hogy ugyanaz legyen, mint a schema.prisma-ban!
     const dbPath = path.join(process.cwd(), "prisma", "flashcardsDb.db");
     

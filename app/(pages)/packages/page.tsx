@@ -99,7 +99,7 @@ export default function PackagesPage() {
             <div className="flex gap-3">
               <Link
                 href={`/cards/${p.id}`}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-white text-sm font-medium hover:bg-indigo-500 transition"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white text-sm font-medium hover:bg-blue-500 transition"
               >
                 <FaPlay />
               </Link>

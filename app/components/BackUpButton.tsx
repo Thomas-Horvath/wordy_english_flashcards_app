@@ -32,7 +32,7 @@ export default function BackupButton() {
     <button
       onClick={handleBackup}
       disabled={loading}
-      className=" cursor-pointer rounded-lg bg-indigo-600 px-6 py-3 text-white font-medium hover:bg-indigo-500 disabled:opacity-50"
+      className=" cursor-pointer rounded-lg bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-500 disabled:opacity-50"
     >
       {loading ? "Mentés készül..." : "📥 Adatbázis letöltése"}
     </button>

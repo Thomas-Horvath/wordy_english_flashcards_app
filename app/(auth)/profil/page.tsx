@@ -24,7 +24,7 @@ export default async function ProfilPage() {
   return (
     <AuthGuard>
       <main className="min-h-screen py-24 px-2">
-        <div className="max-w-[1200px] mx-auto bg-neutral-900 text-white px-4 py-10 rounded-xl shadow-lg">
+        <div className="max-w-300 mx-auto bg-neutral-900 text-white px-4 py-10 rounded-xl shadow-lg">
           <h1 className="text-4xl font-bold mb-8 text-center">⚙️ Beállítások</h1>
 
           {/* Felhasználói adatok */}
@@ -54,7 +54,7 @@ export default async function ProfilPage() {
             <h2 className="text-2xl font-semibold mb-4">Fiókkezelés</h2>
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <SignOutButton />
-              <Link href={"/newpassword"} className="inline-block w-fit cursor-pointer  px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-500">
+              <Link href={"/newpassword"} className="inline-block w-fit cursor-pointer  px-4 py-2 bg-blue-600 rounded hover:bg-blue-500">
                 Jelszó módosítása
               </Link>
             </div>

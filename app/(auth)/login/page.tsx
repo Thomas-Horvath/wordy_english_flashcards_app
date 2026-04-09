@@ -72,7 +72,7 @@ export default function LoginPage() {
           <p className="text-red-500 text-sm mt-2">{message}</p>
           <button
             type="submit"
-            className="cursor-pointer  px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+            className="cursor-pointer  px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium"
           >
             Belépés
           </button>
@@ -80,7 +80,7 @@ export default function LoginPage() {
 
         <p className="text-gray-400 text-sm text-center mt-6">
           Nincs még fiókod?{" "}
-          <a href="/register" className="text-indigo-400 hover:underline">
+          <a href="/register" className="text-blue-400 hover:underline">
             Regisztráció
           </a>
         </p>

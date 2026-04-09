@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookies } from "@/lib/auth"; // korábbi helpered
+import { validateGroupName } from "@/lib/validation";
 
 export async function POST(req: Request) {
   const user = await getUserFromCookies();
@@ -9,13 +10,14 @@ export async function POST(req: Request) {
   }
 
   const { name } = await req.json();
-  if (!name || typeof name !== "string") {
-    return NextResponse.json({ error: "Név kötelező" }, { status: 400 });
+  const validation = validateGroupName(name);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
   const group = await prisma.wordGroup.create({
     data: {
-      name,
+      name: validation.data,
       userId: user.id,
     },
   });
