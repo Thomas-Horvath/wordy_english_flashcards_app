@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/app/components/Spinner";
-import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import AlertModal from "@/app/components/AlertModal";
 import { FaTrash } from "react-icons/fa";
 import ConfirmModal from "../../ConfirmModal";
 
@@ -17,6 +17,10 @@ export default function EditPackagePage() {
   const [name, setName] = useState("");
   const [cards, setCards] = useState<WordPair[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [confirmIndex, setConfirmIndex] = useState<number | null>(null);
 
 
@@ -24,11 +28,22 @@ export default function EditPackagePage() {
     if (!params.id) return;
 
     (async () => {
-      const res = await fetch(`/api/groups/${params.id}`);
-      const data = await res.json();
-      setName(data.name);
-      setCards(data.cards);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/groups/${params.id}`);
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          setLoadError(data?.error || "Nem sikerült betölteni a szócsomagot.");
+          return;
+        }
+
+        setName(data.name);
+        setCards(data.cards);
+      } catch {
+        setLoadError("Nem sikerült betölteni a szócsomagot.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [params.id]);
 
@@ -38,10 +53,16 @@ export default function EditPackagePage() {
     const updated = [...cards];
     updated[index] = { ...updated[index], [field]: value };
     setCards(updated);
+    if (error) {
+      setError("");
+    }
   };
 
   const addCard = () => {
     setCards([...cards, { en: "", hu: "" }]);
+    if (error) {
+      setError("");
+    }
   };
 
 
@@ -51,7 +72,8 @@ export default function EditPackagePage() {
       // adatbázisból törlés
       const res = await fetch(`/api/cards/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        alert("Nem sikerült törölni a szót.");
+        const data = await res.json().catch(() => null);
+        setDeleteError(data?.error || "Nem sikerült törölni a szót.");
         return;
       }
     }
@@ -63,21 +85,32 @@ export default function EditPackagePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSaving(true);
 
     // 🔹 kiszűrjük az üres sorokat
     const filtered = cards.filter(
       (c) => c.en.trim() !== "" && c.hu.trim() !== ""
     );
 
-    const res = await fetch(`/api/groups/${params.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, cards: filtered }),
-    });
-    if (res.ok) {
-      router.push("/packages");
-    } else {
-      alert("Hiba történt mentés közben.");
+    try {
+      const res = await fetch(`/api/groups/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, cards: filtered }),
+      });
+
+      if (res.ok) {
+        router.push("/packages");
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      setError(data?.error || "Hiba történt mentés közben.");
+    } catch {
+      setError("Nem sikerült kapcsolódni a szerverhez. Próbáld újra.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -89,10 +122,13 @@ export default function EditPackagePage() {
 
 
   if (!loggedIn) {
-    // ha nincs user, átirányítjuk loginra
     return (
-      <main className="flex items-center justify-center min-h-screen">
-        <p>Nem vagy bejelentkezve. <Link href="/login">Bejelentkezés</Link></p>
+      <main className="min-h-screen bg-neutral-900">
+        <AlertModal
+          open
+          message="Nem vagy bejelentkezve."
+          closeHref="/login"
+        />
       </main>
     );
   }
@@ -108,7 +144,12 @@ export default function EditPackagePage() {
           <label className="block text-sm font-medium mb-2">Csomag neve</label>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (error) {
+                setError("");
+              }
+            }}
             className="w-full rounded-lg bg-neutral-800 px-4 py-2"
           />
         </div>
@@ -136,7 +177,7 @@ export default function EditPackagePage() {
               <button
                 type="button"
                 onClick={() => setConfirmIndex(i)}
-                className="flex items-center justify-center rounded-lg border border-red-500 p-2 text-red-400 hover:bg-red-600 hover:text-white transition w-full sm:w-auto mt-2"
+                className="cursor-pointer flex items-center justify-center rounded-lg border border-red-500 p-2 text-red-400 hover:bg-red-600 hover:text-white transition w-full sm:w-auto mt-2"
                 title="Törlés"
               >
                 <FaTrash size={16} />
@@ -146,7 +187,7 @@ export default function EditPackagePage() {
           <button
             type="button"
             onClick={addCard}
-            className="mt-2 rounded-lg bg-green-600 px-4 py-2 text-sm hover:bg-green-500"
+            className="mt-2 rounded-lg bg-green-600 px-4 py-2 text-sm hover:bg-green-500 cursor-pointer"
           >
             + Új szó
           </button>
@@ -155,14 +196,15 @@ export default function EditPackagePage() {
         <div className="flex justify-end gap-4">
           <button
             type="submit"
-            className="rounded-lg bg-indigo-600 px-6 py-2 font-medium hover:bg-indigo-500"
+            disabled={saving}
+            className="rounded-lg bg-indigo-600 px-6 py-2 font-medium hover:bg-indigo-500 cursor-pointer"
           >
-            Mentés
+            {saving ? "Mentés..." : "Mentés"}
           </button>
           <button
             type="button"
             onClick={() => router.push("/packages")}
-            className="rounded-lg bg-neutral-700 px-6 py-2 font-medium hover:bg-neutral-600"
+            className="rounded-lg bg-neutral-700 px-6 py-2 font-medium hover:bg-neutral-600 cursor-pointer"
           >
             Mégse
           </button>
@@ -182,6 +224,25 @@ export default function EditPackagePage() {
           }}
         />
       )}
+
+      <AlertModal
+        open={Boolean(error)}
+        message={error}
+        onClose={() => setError("")}
+      />
+
+      <AlertModal
+        open={Boolean(loadError)}
+        message={loadError}
+        closeHref="/packages"
+        onClose={() => setLoadError("")}
+      />
+
+      <AlertModal
+        open={Boolean(deleteError)}
+        message={deleteError}
+        onClose={() => setDeleteError("")}
+      />
     </main>
   );
 }

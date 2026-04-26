@@ -88,8 +88,8 @@ export function sanitizeWordPairs(cards: unknown): ValidationResult<SanitizedWor
       return { success: false, error: "Minden kártyánál mindkét nyelvi mezőt töltsd ki." };
     }
 
-    if (en.length > 120 || hu.length > 120) {
-      return { success: false, error: "Egy szó legfeljebb 120 karakter lehet." };
+    if (en.length > 200 || hu.length > 200) {
+      return { success: false, error: "Egy szó legfeljebb 200 karakter lehet." };
     }
 
     const sanitizedCard: SanitizedWordPairInput = { en, hu };

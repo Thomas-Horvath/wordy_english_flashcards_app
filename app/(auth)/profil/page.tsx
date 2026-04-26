@@ -3,18 +3,19 @@ import Link from "next/link";
 import BackupButton from "../../components/BackUpButton";
 import SignOutButton from "./SignOutButton";
 import AuthGuard from "@/app/components/AuthGuard";
+import AlertModal from "@/app/components/AlertModal";
 
 export default async function ProfilPage() {
   const user = await getUserFromCookies();
 
   if (!user) {
     return (
-
-      <main className="flex items-center justify-center min-h-screen">
-        <p>
-          Nem vagy bejelentkezve.{" "}
-          <Link href="/login" className="text-blue-500">Bejelentkezés</Link>
-        </p>
+      <main className="min-h-screen bg-neutral-900">
+        <AlertModal
+          open
+          message="Nem vagy bejelentkezve."
+          closeHref="/login"
+        />
       </main>
     )
   }

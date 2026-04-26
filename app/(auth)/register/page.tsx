@@ -1,5 +1,6 @@
 "use client";
 
+import AlertModal from "@/app/components/AlertModal";
 import { useState } from "react";
 
 export default function RegisterPage() {
@@ -53,7 +54,12 @@ export default function RegisterPage() {
                     type="text"
                     placeholder="Név"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                        if (message) {
+                            setMessage("");
+                        }
+                    }}
                     className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
                     required
                 />
@@ -61,7 +67,12 @@ export default function RegisterPage() {
                     type="email"
                     placeholder="E-mail"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (message) {
+                            setMessage("");
+                        }
+                    }}
                     className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
                     required
                 />
@@ -70,7 +81,12 @@ export default function RegisterPage() {
                     type="password"
                     placeholder="Jelszó"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (message) {
+                            setMessage("");
+                        }
+                    }}
                     className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
                     required
                 />
@@ -79,11 +95,15 @@ export default function RegisterPage() {
                     type="password"
                     placeholder="Jelszó megerősítése"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (message) {
+                            setMessage("");
+                        }
+                    }}
                     className="w-full mb-6 px-4 py-2 rounded bg-neutral-700 text-white"
                     required
                 />
-                <p className="text-red-500 text-sm mt-2">{message}</p>
                 <button
                     type="submit"
                     className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded text-white"
@@ -97,6 +117,12 @@ export default function RegisterPage() {
                         Bejelentkezés
                     </a>
                 </p>
+
+                <AlertModal
+                    open={Boolean(message)}
+                    message={message}
+                    onClose={() => setMessage("")}
+                />
             </form>
         </main>
     );

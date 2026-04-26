@@ -2,19 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import AlertModal from "@/app/components/AlertModal";
 
 export default function NewPackagePage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
    const { loggedIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setError("A csomag neve kötelező.");
+      return;
+    }
 
+    setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/groups/new", {
@@ -29,8 +34,10 @@ export default function NewPackagePage() {
         router.push("/packages"); // siker után vissza a listához
       } else {
         const err = await res.json();
-        alert(err.error || "Hiba a létrehozás közben");
+        setError(err.error || "Hiba a létrehozás közben");
       }
+    } catch {
+      setError("Nem sikerült létrehozni a csomagot. Próbáld újra.");
     } finally {
       setLoading(false);
     }
@@ -38,10 +45,13 @@ export default function NewPackagePage() {
 
 
   if (!loggedIn) {
-    // ha nincs user, átirányítjuk loginra
     return (
-      <main className="flex items-center justify-center min-h-screen">
-        <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+      <main className="min-h-screen bg-neutral-900">
+        <AlertModal
+          open
+          message="Nem vagy bejelentkezve."
+          closeHref="/login"
+        />
       </main>
     );
   }
@@ -57,7 +67,12 @@ export default function NewPackagePage() {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) {
+                  setError("");
+                }
+              }}
               className="w-full rounded-lg px-4 py-2 bg-neutral-800 text-white border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="pl. Állatok"
             />
@@ -72,6 +87,12 @@ export default function NewPackagePage() {
           </button>
         </form>
       </div>
+
+      <AlertModal
+        open={Boolean(error)}
+        message={error}
+        onClose={() => setError("")}
+      />
     </main>
   );
 }

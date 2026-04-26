@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CardPlayer from "./CardPlayer"; // klienses komponens
 import { getUserFromCookies, isLoggedIn } from "@/lib/auth";
-import Link from "next/link";
+import AlertModal from "@/app/components/AlertModal";
 import AuthGuard from "@/app/components/AuthGuard";
 
 // Ennél az oldalnál fontos, hogy minden kérés friss adatból dolgozzon,
@@ -23,22 +22,42 @@ export default async function Page({ params }: { params: { id: string } }) {
     const loggedIn = await isLoggedIn();
     const user = await getUserFromCookies();
 
-    if (Number.isNaN(groupId)) return notFound();
+    if (Number.isNaN(groupId)) {
+        return (
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="Érvénytelen szócsomag azonosító."
+                    closeHref="/packages"
+                />
+            </main>
+        );
+    }
 
     // A kiválasztott csomaghoz tartozó szópárokat betöltjük.
     // Itt csak a ténylegesen szükséges mezőket kérjük le: angol és magyar alak.
     if (!loggedIn) {
-        // Ha nincs bejelentkezve a felhasználó, nem a gyakorló nézetet adjuk vissza,
-        // hanem egy egyszerű állapotképernyőt belépési linkkel.
         return (
-            <main className="flex items-center justify-center min-h-screen">
-                <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="Nem vagy bejelentkezve."
+                    closeHref="/login"
+                />
             </main>
         );
     }
 
     if (!user) {
-        return notFound();
+        return (
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="Nem sikerült azonosítani a felhasználót."
+                    closeHref="/login"
+                />
+            </main>
+        );
     }
 
     const group = await prisma.wordGroup.findFirst({
@@ -51,21 +70,31 @@ export default async function Page({ params }: { params: { id: string } }) {
         },
     });
 
-    if (!group) return notFound();
-
-    const cards: WordPair[] = group.cards;
-
-
-    if (cards.length === 0) {
-        // Ha a csomag létezik, de nincs benne egyetlen szó sem,
-        // a CardPlayer nem tudna mit megjeleníteni, ezért külön üzenetet adunk.
+    if (!group) {
         return (
-            <main className="flex items-center justify-center min-h-screen bg-neutral-900 text-white">
-                Nincs adat ehhez a csomaghoz…
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="A szócsomag nem található."
+                    closeHref="/packages"
+                />
             </main>
         );
     }
 
+    const cards: WordPair[] = group.cards;
+
+    if (cards.length === 0) {
+        return (
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="Ebben a szócsomagban még nincs egyetlen szó sem."
+                    closeHref="/packages"
+                />
+            </main>
+        );
+    }
 
     return (
         // Az AuthGuard kliensoldali védelemként is ott marad.

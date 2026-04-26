@@ -1,5 +1,6 @@
 "use client";
 
+import AlertModal from "@/app/components/AlertModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
@@ -50,7 +51,12 @@ export default function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (message) {
+                  setMessage("");
+                }
+              }}
               required
               className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="pelda@email.com"
@@ -62,14 +68,18 @@ export default function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (message) {
+                  setMessage("");
+                }
+              }}
               required
               className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="••••••••"
             />
           </div>
 
-          <p className="text-red-500 text-sm mt-2">{message}</p>
           <button
             type="submit"
             className="cursor-pointer  px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium"
@@ -84,6 +94,12 @@ export default function LoginPage() {
             Regisztráció
           </a>
         </p>
+
+        <AlertModal
+          open={Boolean(message)}
+          message={message}
+          onClose={() => setMessage("")}
+        />
       </div>
     </main>
   );

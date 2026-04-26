@@ -8,6 +8,8 @@ A Wordy egy magyar nyelvű, full-stack szókártyás alkalmazás angol-magyar sz
 - a backend kritikusabb route-jai már tulajdonjog-ellenőrzéssel működnek
 - a regisztráció és a csomagszerkesztés központi validációt használ
 - a szólista mentése már nem teljes újraépítéssel, hanem diff-alapú frissítéssel történik
+- a frontend egységes modal alapú hibakezelést használ a korábbi `alert()` helyett
+- az alkalmazás saját `404` oldallal és több védett állapotképernyővel rendelkezik
 
 ## Fő funkciók
 
@@ -17,9 +19,11 @@ A Wordy egy magyar nyelvű, full-stack szókártyás alkalmazás angol-magyar sz
 - jelszó módosítása
 - szócsomagok listázása, létrehozása, szerkesztése és törlése
 - angol-magyar szópárok kezelése csomagokon belül
+- hosszabb, legfeljebb 200 karakteres angol-magyar kártyaszövegek kezelése
 - kártyás gyakorló nézet kezdő nyelv választással
 - újrakezdés ugyanazzal vagy fordított nyelvi iránnyal
 - SQLite adatbázis backup letöltése bejelentkezett felhasználónak
+- egyedi `404` oldal hibás URL-ekhez
 
 ## Tech stack
 
@@ -42,18 +46,27 @@ A Wordy egy magyar nyelvű, full-stack szókártyás alkalmazás angol-magyar sz
 - a token `token` nevű HTTP-only cookie-ban tárolódik
 - az auth ellenőrzést a `lib/auth.ts` helperjei végzik
 - a kliens az `AuthContext` segítségével szinkronizálja a bejelentkezési állapotot a `/api/profile` végponttal
+- az utolsó ismert auth állapot kliensoldalon cache-elve marad, így egy átmeneti hálózati hiba nem dobja ki azonnal a felhasználót
 
 ### Validáció
 
 - a regisztráció, a csomagnév és a szólista validáció közös helperbe került
 - az email normalizálva, a szövegek trimelve kerülnek feldolgozásra
 - félig kitöltött szómezők mentése nem engedett
+- a kártyák angol és magyar oldala legfeljebb 200 karakter lehet
 
 ### Szólista mentés
 
 - szerkesztéskor a backend összeveti a meglévő és a beküldött kártyákat
 - külön kezeli a létrehozandó, módosítandó és törlendő elemeket
 - a mentés tranzakcióban fut
+
+### Frontend hibakezelés
+
+- a felhasználói hibák és műveleti hibák közös `AlertModal` komponensen keresztül jelennek meg
+- az új csomag létrehozása, a csomagszerkesztés, a backup, a login, a regisztráció és a jelszócsere is modalos visszajelzést használ
+- védett oldalaknál a kijelentkezett állapot külön, teljes képernyős modalos nézetet kap
+- üres csomag gyakorlása már a csomaglistában le van tiltva, és közvetlen URL esetén is védve van
 
 ## Projektstruktúra
 
@@ -134,6 +147,7 @@ tests/
 - `/packages/create` új csomag létrehozása
 - `/packages/edit/[id]` csomag és szavak szerkesztése
 - `/cards/[id]` gyakorló nézet
+- `not-found` egyedi 404 oldal hibás útvonalakhoz
 
 ## API végpontok
 
@@ -233,13 +247,15 @@ A `test` script jelenleg a tiszta üzleti logikát ellenőrzi:
 - a `/api/backup` végpont auth-ellenőrzést kapott
 - a regisztráció duplikált emailre `409` választ ad
 - a backend értelmezhető validációs hibákat küld vissza
+- az üres vagy hibás csomag-URL-ek kliensoldalon is kulturált hibaképernyőt kapnak
 
 ## Ismert korlátok
 
 - a jelenlegi tesztek még csak a tiszta üzleti logikát fedik le, nincs route- vagy UI-szintű tesztelés
 - a backup a teljes SQLite adatbázisfájlt tölti le, ezért ez inkább admin jellegű funkció, mint finoman szabályozott export
 - a jelszó- és auth-folyamatok működnek, de még nincs rate limit vagy brute-force védelem
-- a kliensoldali hibakezelés több helyen még `alert` alapú
+- a mondatkártyák már tárolhatók, de a kártyanézet tipográfiája hosszú szövegeknél még tovább finomítható
+- a tesztek futnak, de a `ts-node` jelenleg Node figyelmeztetést ír ki az ESM/module kezelésről
 
 ## Hasznos fájlok
 
@@ -247,8 +263,10 @@ A `test` script jelenleg a tiszta üzleti logikát ellenőrzi:
 - `lib/auth.ts`
 - `lib/validation.ts`
 - `lib/wordPairs.ts`
+- `app/components/AlertModal.tsx`
 - `app/context/AuthContext.tsx`
 - `app/api/groups/[id]/route.ts`
 - `app/api/cards/[id]/route.ts`
 - `app/api/backup/route.ts`
+- `app/not-found.tsx`
 - `prisma/schema.prisma`

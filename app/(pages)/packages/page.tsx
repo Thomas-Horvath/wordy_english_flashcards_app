@@ -2,6 +2,7 @@
 "use client";
 import Spinner from "@/app/components/Spinner";
 import { useAuth } from "@/app/context/AuthContext";
+import AlertModal from "@/app/components/AlertModal";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaPlay, FaEdit, FaTrash } from "react-icons/fa";
@@ -20,6 +21,8 @@ export default function PackagesPage() {
   const { loggedIn } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
 
 
@@ -29,13 +32,21 @@ export default function PackagesPage() {
         setLoading(false);
         return;
       }
-      const res = await fetch("/api/groups", { credentials: "include" });
+      try {
+        const res = await fetch("/api/groups", { credentials: "include" });
 
-      if (res.ok) {
-        const data = await res.json();
-        setPacks(data);
+        if (res.ok) {
+          const data = await res.json();
+          setPacks(data);
+        } else {
+          const data = await res.json().catch(() => null);
+          setLoadError(data?.error || "Nem sikerült betölteni a szócsomagokat.");
+        }
+      } catch {
+        setLoadError("Nem sikerült betölteni a szócsomagokat.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [loggedIn]);
 
@@ -46,6 +57,18 @@ export default function PackagesPage() {
     setConfirmOpen(true);
   };
 
+  const handleStartPractice = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    pack: Pack
+  ) => {
+    if (pack._count.cards > 0) {
+      return;
+    }
+
+    e.preventDefault();
+    setError("Ebben a szócsomagban még nincs egyetlen szó sem.");
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
 
@@ -53,7 +76,8 @@ export default function PackagesPage() {
     if (res.ok) {
       setPacks((prev) => prev.filter((p) => p.id !== deleteId));
     } else {
-      alert("Hiba történt a törlés során");
+      const data = await res.json().catch(() => null);
+      setError(data?.error || "Hiba történt a törlés során.");
     }
     setConfirmOpen(false);
     setDeleteId(null);
@@ -62,10 +86,13 @@ export default function PackagesPage() {
   if (loggedIn === null || loading) return <Spinner />;
 
   if (!loggedIn) {
-    // ha nincs user, átirányítjuk loginra
     return (
-      <main className="flex items-center justify-center min-h-screen">
-        <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+      <main className="min-h-screen bg-neutral-900">
+        <AlertModal
+          open
+          message="Nem vagy bejelentkezve."
+          closeHref="/login"
+        />
       </main>
     );
   }
@@ -99,6 +126,7 @@ export default function PackagesPage() {
             <div className="flex gap-3">
               <Link
                 href={`/cards/${p.id}`}
+                onClick={(e) => handleStartPractice(e, p)}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white text-sm font-medium hover:bg-blue-500 transition"
               >
                 <FaPlay />
@@ -140,6 +168,18 @@ export default function PackagesPage() {
         />
       )
       }
+
+      <AlertModal
+        open={Boolean(error)}
+        message={error}
+        onClose={() => setError("")}
+      />
+
+      <AlertModal
+        open={Boolean(loadError)}
+        message={loadError}
+        onClose={() => setLoadError("")}
+      />
     </main>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import AuthGuard from "@/app/components/AuthGuard";
+import AlertModal from "@/app/components/AlertModal";
 import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
-import Link from "next/link";
 
 export default function RegisterPage() {
     const [oldPassword, setOldPassword] = useState("");
@@ -17,6 +17,7 @@ export default function RegisterPage() {
         e.preventDefault();
 
         if (newPassword !== confirmPassword) {
+            setMessage("");
             setError("A két jelszó nem egyezik");
             return;
         }
@@ -48,10 +49,13 @@ export default function RegisterPage() {
 
 
     if (!loggedIn) {
-        // ha nincs user, átirányítjuk loginra
         return (
-            <main className="flex items-center justify-center min-h-screen">
-                <p>Nem vagy bejelentkezve. <Link href="/login" className="text-blue-500">Bejelentkezés</Link></p>
+            <main className="min-h-screen bg-neutral-900">
+                <AlertModal
+                    open
+                    message="Nem vagy bejelentkezve."
+                    closeHref="/login"
+                />
             </main>
         );
     }
@@ -71,7 +75,12 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="Régi jeelszó"
                         value={oldPassword}
-                        onChange={(e) => setOldPassword(e.target.value)}
+                        onChange={(e) => {
+                            setOldPassword(e.target.value);
+                            if (error) {
+                                setError("");
+                            }
+                        }}
                         className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
                         required
                     />
@@ -80,7 +89,12 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="Új jelszó"
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onChange={(e) => {
+                            setNewPassword(e.target.value);
+                            if (error) {
+                                setError("");
+                            }
+                        }}
                         className="w-full mb-4 px-4 py-2 rounded bg-neutral-700 text-white"
                         required
                     />
@@ -89,11 +103,15 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="Új jelszó megerősítése"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            if (error) {
+                                setError("");
+                            }
+                        }}
                         className="w-full mb-6 px-4 py-2 rounded bg-neutral-700 text-white"
                         required
                     />
-                    {error && <p className="text-red-500 text-sm my-2">{error}</p>}
                     {message && <p className="text-green-500 text-sm my-2">{message}</p>}
 
                     <button
@@ -111,6 +129,12 @@ export default function RegisterPage() {
                     </p>
                 </form>
             </main>
+
+            <AlertModal
+                open={Boolean(error)}
+                message={error}
+                onClose={() => setError("")}
+            />
         </AuthGuard>
     );
 }
